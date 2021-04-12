@@ -14,8 +14,9 @@ def input_to_tweets(file_name):
 def frequencies(tweets):
     token_count, len_word = 0, 0
     word_frequencies = Counter()
-    # POS_tagger = Counter()
+    POS_tagger = Counter()
     words = []
+    POS_tags = []
     nouns = []
     verbs = []
     propn = []
@@ -35,34 +36,37 @@ def frequencies(tweets):
                 if not token.is_punct:
                     words.append(token.text)
                     len_word += len(token)
-                    if token.pos_ == 'NOUN':
-                        nouns.append(token)
-                    elif token.pos_ == 'VERB':
-                        verbs.append(token)
-                    elif token.pos_ == 'PROPN':
-                        propn.append(token)
-                    elif token.pos_ == 'DET':
-                        det.append(token)
-                    elif token.pos_ == 'ADP':
-                        adp.append(token)
-                    elif token.pos_ == 'PRON':
-                        pron.append(token)
-                    elif token.pos_ == 'ADJ':
-                        adj.append(token)
-                    elif token.pos_ == 'ADV':
-                        adv.append(token)
-                    elif token.pos_ == 'AUX':
-                        aux.append(token)
-                    elif token.pos_ == 'PART':
-                        part.append(token)
-            # POS_tagger.update(POS_tags) # used to find top 10 pos-tags
+                    POS_tags.append(token.tag_)
+                    nouns, verbs, propn, det, adp, pron, adj, adv, aux, part = pos_tagger(token, nouns, verbs, propn, det, adp, pron, adj, adv, aux, part)
+            POS_tagger.update(POS_tags) # used to find top 10 pos-tags
             word_frequencies.update(words)
         token_count += len(doc)
     word_count = sum(word_frequencies.values())
     type_count = len(word_frequencies.keys())
-    print(nouns, verbs, propn, det, adp, pron, adj, adv, aux, part)
-    return token_count, word_count, type_count, len_word, word_frequencies
+    return token_count, word_count, type_count, len_word, word_frequencies, nouns, verbs, propn, det, adp, pron, adj, adv, aux, part
 
+def pos_tagger(token, nouns, verbs, propn, det, adp, pron, adj, adv, aux, part):
+    if token.tag_ == 'NN':
+        nouns.append(token)
+    elif token.tag_ == 'NNP':
+        verbs.append(token)
+    elif token.tag_ == 'IN':
+        propn.append(token)
+    elif token.tag_ == 'DT':
+        det.append(token)
+    elif token.tag_ == 'PRP':
+        adp.append(token)
+    elif token.tag_ == 'RB':
+        pron.append(token)
+    elif token.tag_ == 'JJ':
+        adj.append(token)
+    elif token.tag_ == 'VB':
+        adv.append(token)
+    elif token.tag_ == 'NNS':
+        aux.append(token)
+    elif token.tag_ == 'VBP':
+        part.append(token)
+    return nouns, verbs, propn, det, adp, pron, adj, adv, aux, part
 
 # open txt file and prepare data
 file = "SemEval2018-T3-train-taskB.txt"
@@ -70,7 +74,7 @@ tweets = input_to_tweets(file)
 
 # Let's run the NLP pipeline on our test input
 nlp = spacy.load('en_core_web_sm')
-tokens, words, types, word_length, word_frequencies = frequencies(tweets)
+tokens, words, types, word_length, word_frequencies, nouns, verbs, propn, det, adp, pron, adj, adv, aux, part = frequencies(tweets)
 average_words_per_tweet = round(words / len(tweets), 2)
 average_word_length = round(word_length / tokens, 2)
 print("number of tokens: {}\n"
@@ -79,3 +83,4 @@ print("number of tokens: {}\n"
       "average words per tweet: {}\n"
       "average word length: {}".format(tokens, words, types, average_words_per_tweet, average_word_length))
 
+print(nouns, verbs, propn, det, adp, pron, adj, adv, aux, part)
