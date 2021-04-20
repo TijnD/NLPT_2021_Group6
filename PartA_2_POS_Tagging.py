@@ -19,17 +19,21 @@ tweets = input_to_tweets(file)
 nlp = spacy.load('en_core_web_sm')
 token_count, len_word = 0, 0
 word_frequencies = Counter()
-
-for tweet in tweets:
-    doc = nlp(tweet)
-    for sentence in doc.sents:
-        words = []
-        for token in sentence:
+fine_pos_tag = Counter()
+for doc in nlp.pipe(tweets):
+    words = []
+    for token in doc:
+            # Let's filter out punctuation
+        if not token.is_punct:
             words.append(token.text)
             len_word += len(token)
-        word_frequencies.update(words)
+            fine_pos_tag.update([token.tag_])
+
+    word_frequencies.update(words)
     token_count += len(doc)
+
 word_count = sum(word_frequencies.values())
+print(word_count)
 type_count = len(word_frequencies.keys())
 average_words_per_tweet = round(word_count / len(tweets), 2)
 average_word_length = round(len_word / token_count, 2)
@@ -38,3 +42,10 @@ print("number of tokens: {}\n"
       "number of types: {}\n"
       "average words per tweet: {}\n"
       "average word length: {}".format(token_count, word_count, type_count, average_words_per_tweet, average_word_length))
+
+# Print tags + occurrences
+print(fine_pos_tag)
+# Print Relative Tag Frequency:
+sbase = sum(fine_pos_tag.values())
+for tag, count in fine_pos_tag.items():
+    print(tag, '{0:2.2f}%'.format((100.0*count)/sbase))
