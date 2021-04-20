@@ -20,17 +20,16 @@ nlp = spacy.load('en_core_web_sm')
 token_count, len_word = 0, 0
 word_frequencies = Counter()
 
-for tweet in tweets:
-    doc = nlp(tweet)
-    for sentence in doc.sents:
-        words = []
-        for token in sentence:
+for doc in nlp.pipe(tweets):
+    words = []
+    for token in doc:
             # Let's filter out punctuation
-            if not token.is_punct:
-                words.append(token.text)
-                len_word += len(token)
-        word_frequencies.update(words)
+        if not token.is_punct:
+            words.append(token.text)
+            len_word += len(token)
+    word_frequencies.update(words)
     token_count += len(doc)
+
 word_count = sum(word_frequencies.values())
 print(word_count)
 type_count = len(word_frequencies.keys())
